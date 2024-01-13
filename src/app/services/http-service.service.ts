@@ -45,7 +45,7 @@ export class HttpService {
     });
   }
 
-  updateUser(user: any): Observable<any> {
+  updateUser(user: any, id: string): Observable<any> {
     let headers = new HttpHeaders().set(
       "Authorization",
       "Bearer " + sessionStorage.getItem("access_token")
@@ -53,7 +53,7 @@ export class HttpService {
 
     const body = user;
 
-    return this.http.put(this.baseUrl + user.id, body, {
+    return this.http.put(this.baseUrl + id, body, {
       headers: headers,
     });
   }

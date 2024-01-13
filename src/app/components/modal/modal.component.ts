@@ -20,24 +20,12 @@ export class ModalComponent implements OnInit {
     private httpService: HttpService
   ) {}
 
-  closeModal() {
-    this.ref.close("some data");
-  }
-
   ngOnInit() {
     this.inputdata = this.data;
-
     if (this.inputdata.code) {
       this.setModalData(this.inputdata.code);
     }
   }
-
-  myform = this.buildr.group({
-    username: this.buildr.control(" ", Validators.required),
-    firstname: this.buildr.control(" ", Validators.required),
-    lastname: this.buildr.control(" ", Validators.required),
-    password: this.buildr.control(" ", Validators.required),
-  });
 
   setModalData(code: any) {
     this.httpService.getSingleUser(code).subscribe((item: any) => {
@@ -52,48 +40,61 @@ export class ModalComponent implements OnInit {
         username: this.editdata.username,
         firstname: this.editdata.firstName,
         lastname: this.editdata.lastName,
-        password: null,
       });
+    });
+  }
+
+  closeModal() {
+    this.ref.close("some data");
+  }
+
+  generatePassword() {
+    return Math.random().toString(36).slice(-8);
+  }
+
+  createUser() {
+    const user = {
+      id: uuidv4(),
+      credentials: [
+        {
+          temporary: false,
+          type: "password",
+          value: this.generatePassword(),
+        },
+      ],
+      firstName: this.myform.value.firstname,
+      lastName: this.myform.value.lastname,
+      username: this.myform.value.username,
+    };
+
+    this.httpService.createUser(user).subscribe(() => {
+      this.closeModal();
+    });
+  }
+
+  editUser() {
+    const user = {
+      firstName: this.myform.value.firstname,
+      lastName: this.myform.value.lastname,
+      username: this.myform.value.username,
+    };
+
+    this.httpService.updateUser(user, this.editdata.id).subscribe(() => {
+      this.closeModal();
     });
   }
 
   saveUser() {
     if (this.inputdata.title === "Create User") {
-      const user = {
-        id: uuidv4(),
-        credentials: [
-          {
-            temporary: false,
-            type: "password",
-            value: this.myform.value.password,
-          },
-        ],
-        firstName: this.myform.value.firstname,
-        lastName: this.myform.value.lastname,
-        username: this.myform.value.username,
-      };
-
-      this.httpService.createUser(user).subscribe(() => {
-        this.closeModal();
-      });
+      this.createUser();
     } else {
-      const user = {
-        id: this.editdata.id,
-        credentials: [
-          {
-            temporary: false,
-            type: "password",
-            value: this.myform.value.password,
-          },
-        ],
-        firstName: this.myform.value.firstname,
-        lastName: this.myform.value.lastname,
-        username: this.myform.value.username,
-      };
-
-      this.httpService.updateUser(user).subscribe(() => {
-        this.closeModal();
-      });
+      this.editUser();
     }
   }
+
+  myform = this.buildr.group({
+    username: this.buildr.control(" ", Validators.required),
+    firstname: this.buildr.control(" ", Validators.required),
+    lastname: this.buildr.control(" ", Validators.required),
+  });
 }

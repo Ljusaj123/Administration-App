@@ -5,8 +5,6 @@ import { MatPaginator } from "@angular/material/paginator";
 import { MatTableDataSource } from "@angular/material/table";
 import { ModalComponent } from "../modal/modal.component";
 import { MatDialog } from "@angular/material/dialog";
-import { Subscription } from "rxjs";
-import { ConfirmModalComponent } from "../confirm-modal/confirm-modal.component";
 
 @Component({
   selector: "app-table",
