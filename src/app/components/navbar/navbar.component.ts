@@ -10,7 +10,6 @@ import { JwksValidationHandler } from "angular-oauth2-oidc-jwks";
   providers: [OAuthService, UrlHelperService],
 })
 export class NavbarComponent implements OnInit {
-  name: string = "";
 
   constructor(private oauthService: OAuthService) {
     this.oauthService.setStorage(sessionStorage);
