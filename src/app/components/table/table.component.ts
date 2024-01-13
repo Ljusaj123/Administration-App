@@ -3,6 +3,8 @@ import { HttpService } from "../../services/http-service.service";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
 import { MatTableDataSource } from "@angular/material/table";
+import { ModalComponent } from "../modal/modal.component";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
   selector: "app-table",
@@ -19,7 +21,7 @@ export class TableComponent {
   @ViewChild(MatPaginator) paginatior!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private httpService: HttpService) {
+  constructor(private httpService: HttpService, private dialog: MatDialog) {
     this.loadUsers();
   }
 
@@ -43,5 +45,22 @@ export class TableComponent {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  createUser() {
+    this.openDialog("Create User");
+  }
+
+  openDialog(title: string, code?: any) {
+    const popup = this.dialog.open(ModalComponent, {
+      width: "330px",
+      data: { title: title, code: code },
+    });
+    popup.afterClosed().subscribe(() => {
+      this.loadUsers();
+    });
+  }
+  editUser(id: string) {
+    this.openDialog("Edit User", id);
   }
 }
