@@ -5,6 +5,8 @@ import { MatPaginator } from "@angular/material/paginator";
 import { MatTableDataSource } from "@angular/material/table";
 import { ModalComponent } from "../modal/modal.component";
 import { MatDialog } from "@angular/material/dialog";
+import { Subscription } from "rxjs";
+import { ConfirmModalComponent } from "../confirm-modal/confirm-modal.component";
 
 @Component({
   selector: "app-table",
@@ -48,19 +50,26 @@ export class TableComponent {
   }
 
   createUser() {
-    this.openDialog("Create User");
+    this.openDialog("Create User", ModalComponent);
   }
 
-  openDialog(title: string, code?: any) {
-    const popup = this.dialog.open(ModalComponent, {
+  editUser(id: string) {
+    this.openDialog("Edit User", ModalComponent, id);
+  }
+
+  deleteUser(id: string) {
+    this.httpService.deleteUser(id).subscribe(() => {
+      this.loadUsers();
+    });
+  }
+
+  openDialog(title: string, component: any, code?: any) {
+    const popup = this.dialog.open(component, {
       width: "330px",
       data: { title: title, code: code },
     });
     popup.afterClosed().subscribe(() => {
       this.loadUsers();
     });
-  }
-  editUser(id: string) {
-    this.openDialog("Edit User", id);
   }
 }

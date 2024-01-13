@@ -40,8 +40,20 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let element">
-          <span>Delete </span>
-          <button type="button" mat-button (click)="editUser(element.id)">
+          <button
+            mat-stroked-button
+            color="warn"
+            (click)="deleteUser(element.id)"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            mat-stroked-button
+            color="primary"
+            (click)="editUser(element.id)"
+            [style]="'margin-left:10px;'"
+          >
             Edit
           </button>
         </td>
