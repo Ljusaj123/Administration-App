@@ -10,6 +10,17 @@ import { NavbarComponent } from "./components/navbar/navbar.component";
 import { HttpClientModule } from "@angular/common/http";
 import { RouterOutlet } from "@angular/router";
 import { OAuthModule } from "angular-oauth2-oidc";
+import { MatTableModule } from "@angular/material/table";
+import { MatSortModule } from "@angular/material/sort";
+import { ModalComponent } from "./components/modal/modal.component";
+import { MatDialogModule } from "@angular/material/dialog";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+import { TableComponent } from "./components/table/table.component";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatCardModule } from "@angular/material/card";
 
 @NgModule({
   declarations: [
@@ -17,6 +28,8 @@ import { OAuthModule } from "angular-oauth2-oidc";
     WelcomeComponent,
     HomeComponent,
     NavbarComponent,
+    ModalComponent,
+    TableComponent,
   ],
   imports: [
     BrowserModule,
@@ -25,6 +38,16 @@ import { OAuthModule } from "angular-oauth2-oidc";
     HttpClientModule,
     RouterOutlet,
     OAuthModule.forRoot(),
+    FormsModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
