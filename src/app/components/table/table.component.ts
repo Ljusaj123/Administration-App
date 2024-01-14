@@ -12,7 +12,6 @@ import { MatDialog } from "@angular/material/dialog";
   styleUrl: "./table.component.css",
 })
 export class TableComponent {
-  usersList = [];
   dialogOpened: boolean = false;
   filter: string = "";
 
@@ -32,7 +31,7 @@ export class TableComponent {
     this.isLoading = true;
     this.httpService.getAllUsers().subscribe({
       next: (results) => {
-        this.usersList = results.map((result: any) => {
+        const users = results.map((result: any) => {
           return {
             id: result.id,
             username: result.username,
@@ -41,9 +40,10 @@ export class TableComponent {
           };
         });
 
-        this.dataSource = new MatTableDataSource(this.usersList);
+        this.dataSource = new MatTableDataSource(users);
         this.dataSource.paginator = this.paginatior;
         this.dataSource.sort = this.sort;
+
         this.isAuthorized = true;
         this.isLoading = false;
         this.filter = "";
@@ -71,8 +71,13 @@ export class TableComponent {
   }
 
   deleteUser(id: string) {
-    this.httpService.deleteUser(id).subscribe(() => {
-      this.loadUsers();
+    this.httpService.deleteUser(id).subscribe({
+      next: () => {
+        this.loadUsers();
+      },
+      error: (error) => {
+        console.log(error);
+      },
     });
   }
 

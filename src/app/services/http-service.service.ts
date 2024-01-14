@@ -12,62 +12,42 @@ export class HttpService {
   baseUrl: string =
     "https://keycloak-tt-keycloak-stage.apps.ocp.thingstalk.eu/admin/realms/test-realm1/users/";
 
-  getAllUsers(): Observable<any> {
-    let headers = new HttpHeaders().set(
-      "Authorization",
-      "Bearer " + sessionStorage.getItem("access_token")
-    );
+  headers = new HttpHeaders().set(
+    "Authorization",
+    "Bearer " + sessionStorage.getItem("access_token")
+  );
 
+  getAllUsers(): Observable<any> {
     return this.http.get(this.baseUrl, {
-      headers: headers,
+      headers: this.headers,
     });
   }
 
   getSingleUser(id: string): Observable<any> {
-    let headers = new HttpHeaders().set(
-      "Authorization",
-      "Bearer " + sessionStorage.getItem("access_token")
-    );
-
     return this.http.get(this.baseUrl + id, {
-      headers: headers,
+      headers: this.headers,
     });
   }
 
   deleteUser(id: string): Observable<any> {
-    let headers = new HttpHeaders().set(
-      "Authorization",
-      "Bearer " + sessionStorage.getItem("access_token")
-    );
-
     return this.http.delete(this.baseUrl + id, {
-      headers: headers,
+      headers: this.headers,
     });
   }
 
   updateUser(user: any, id: string): Observable<any> {
-    let headers = new HttpHeaders().set(
-      "Authorization",
-      "Bearer " + sessionStorage.getItem("access_token")
-    );
-
     const body = user;
 
     return this.http.put(this.baseUrl + id, body, {
-      headers: headers,
+      headers: this.headers,
     });
   }
 
   createUser(user: any): Observable<any> {
-    let headers = new HttpHeaders().set(
-      "Authorization",
-      "Bearer " + sessionStorage.getItem("access_token")
-    );
-
     const body = user;
 
     return this.http.post(this.baseUrl, body, {
-      headers: headers,
+      headers: this.headers,
     });
   }
 }

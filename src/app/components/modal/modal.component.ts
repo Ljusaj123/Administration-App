@@ -29,6 +29,7 @@ export class ModalComponent implements OnInit {
 
   ngOnInit() {
     this.inputdata = this.data;
+
     if (this.inputdata.request === "PUT") {
       this.setModalData(this.inputdata.id);
       this.myform.controls.username.disable();
@@ -61,11 +62,6 @@ export class ModalComponent implements OnInit {
   }
 
   createUser() {
-    if (this.myform.status === "INVALID") {
-      this.errorMessage = "Enter required inputs";
-      return;
-    }
-
     const user = {
       id: uuidv4(),
       credentials: [
