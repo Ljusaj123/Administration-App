@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 export class ModalComponent implements OnInit {
   inputdata: any;
   editdata: any;
+  errorMessage: string = "";
 
   constructor(
     private buildr: FormBuilder,
@@ -20,15 +21,22 @@ export class ModalComponent implements OnInit {
     private httpService: HttpService
   ) {}
 
+  myform = this.buildr.group({
+    username: this.buildr.control("", [Validators.required]),
+    firstname: this.buildr.control("", [Validators.required]),
+    lastname: this.buildr.control("", [Validators.required]),
+  });
+
   ngOnInit() {
     this.inputdata = this.data;
-    if (this.inputdata.code) {
-      this.setModalData(this.inputdata.code);
+    if (this.inputdata.request === "PUT") {
+      this.setModalData(this.inputdata.id);
+      this.myform.controls.username.disable();
     }
   }
 
-  setModalData(code: any) {
-    this.httpService.getSingleUser(code).subscribe((item: any) => {
+  setModalData(id: string) {
+    this.httpService.getSingleUser(id).subscribe((item: any) => {
       this.editdata = {
         id: item.id,
         username: item.username,
@@ -44,15 +52,20 @@ export class ModalComponent implements OnInit {
     });
   }
 
-  closeModal() {
-    this.ref.close("some data");
-  }
-
-  generatePassword() {
-    return Math.random().toString(36).slice(-8);
+  saveUser() {
+    if (this.inputdata.request === "POST") {
+      this.createUser();
+    } else {
+      this.editUser();
+    }
   }
 
   createUser() {
+    if (this.myform.status === "INVALID") {
+      this.errorMessage = "Enter required inputs";
+      return;
+    }
+
     const user = {
       id: uuidv4(),
       credentials: [
@@ -67,34 +80,38 @@ export class ModalComponent implements OnInit {
       username: this.myform.value.username,
     };
 
-    this.httpService.createUser(user).subscribe(() => {
-      this.closeModal();
+    this.httpService.createUser(user).subscribe({
+      next: () => this.closeModal(),
+      error: (error) => {
+        this.errorMessage = error.error.errorMessage;
+      },
     });
   }
 
   editUser() {
+    if (this.myform.status === "INVALID") {
+      this.errorMessage = "Enter required inputs";
+      return;
+    }
     const user = {
       firstName: this.myform.value.firstname,
       lastName: this.myform.value.lastname,
       username: this.myform.value.username,
     };
 
-    this.httpService.updateUser(user, this.editdata.id).subscribe(() => {
-      this.closeModal();
+    this.httpService.updateUser(user, this.editdata.id).subscribe({
+      next: () => this.closeModal(),
+      error: (error) => {
+        this.errorMessage = error.error.errorMessage;
+      },
     });
   }
 
-  saveUser() {
-    if (this.inputdata.title === "Create User") {
-      this.createUser();
-    } else {
-      this.editUser();
-    }
+  closeModal() {
+    this.ref.close();
   }
 
-  myform = this.buildr.group({
-    username: this.buildr.control(" ", Validators.required),
-    firstname: this.buildr.control(" ", Validators.required),
-    lastname: this.buildr.control(" ", Validators.required),
-  });
+  generatePassword() {
+    return Math.random().toString(36).slice(-8);
+  }
 }

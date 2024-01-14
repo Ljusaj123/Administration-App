@@ -7,7 +7,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { WelcomeComponent } from "./pages/welcome/welcome.component";
 import { HomeComponent } from "./pages/home/home.component";
 import { NavbarComponent } from "./components/navbar/navbar.component";
-import { HttpClientModule } from "@angular/common/http";
+import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
 import { RouterOutlet } from "@angular/router";
 import { OAuthModule } from "angular-oauth2-oidc";
 import { MatTableModule } from "@angular/material/table";
@@ -21,6 +21,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { TableComponent } from "./components/table/table.component";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatCardModule } from "@angular/material/card";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { MatCardModule } from "@angular/material/card";
     MatInputModule,
     MatButtonModule,
     MatCardModule,
+    MatProgressSpinnerModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

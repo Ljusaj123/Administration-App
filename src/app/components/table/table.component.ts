@@ -14,9 +14,12 @@ import { MatDialog } from "@angular/material/dialog";
 export class TableComponent {
   usersList = [];
   dialogOpened: boolean = false;
-  dataSource: any;
+  filter: string = "";
 
+  isLoading: boolean = false;
+  isAuthorized: boolean = true;
   displayedColumns: string[] = ["username", "firstName", "lastName", "actions"];
+  dataSource: any;
 
   @ViewChild(MatPaginator) paginatior!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -26,33 +29,45 @@ export class TableComponent {
   }
 
   loadUsers() {
-    this.httpService.getAllUsers().subscribe((results) => {
-      this.usersList = results.map((result: any) => {
-        return {
-          id: result.id,
-          username: result.username,
-          firstName: result.firstName,
-          lastName: result.lastName,
-        };
-      });
+    this.isLoading = true;
+    this.httpService.getAllUsers().subscribe({
+      next: (results) => {
+        this.usersList = results.map((result: any) => {
+          return {
+            id: result.id,
+            username: result.username,
+            firstName: result.firstName,
+            lastName: result.lastName,
+          };
+        });
 
-      this.dataSource = new MatTableDataSource(this.usersList);
-      this.dataSource.paginator = this.paginatior;
-      this.dataSource.sort = this.sort;
+        this.dataSource = new MatTableDataSource(this.usersList);
+        this.dataSource.paginator = this.paginatior;
+        this.dataSource.sort = this.sort;
+        this.isAuthorized = true;
+        this.isLoading = false;
+        this.filter = "";
+      },
+      error: (error) => {
+        if (error.status === 401 || error.status === 403) {
+          this.isAuthorized = false;
+          this.isLoading = false;
+        }
+      },
     });
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.filter = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = this.filter.trim().toLowerCase();
   }
 
   createUser() {
-    this.openDialog("Create User", ModalComponent);
+    this.openDialog("Create User", ModalComponent, "POST");
   }
 
   editUser(id: string) {
-    this.openDialog("Edit User", ModalComponent, id);
+    this.openDialog("Edit User", ModalComponent, "PUT", id);
   }
 
   deleteUser(id: string) {
@@ -61,10 +76,10 @@ export class TableComponent {
     });
   }
 
-  openDialog(title: string, component: any, code?: any) {
+  openDialog(title: string, component: any, request: string, id?: string) {
     const popup = this.dialog.open(component, {
       width: "330px",
-      data: { title: title, code: code },
+      data: { title: title, id: id, request: request },
     });
     popup.afterClosed().subscribe(() => {
       this.loadUsers();

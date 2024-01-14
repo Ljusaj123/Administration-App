@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { OAuthService, UrlHelperService } from "angular-oauth2-oidc";
 import { authCodeFlowConfig } from "../../auth-config";
 import { JwksValidationHandler } from "angular-oauth2-oidc-jwks";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-navbar",
@@ -10,9 +11,8 @@ import { JwksValidationHandler } from "angular-oauth2-oidc-jwks";
   providers: [OAuthService, UrlHelperService],
 })
 export class NavbarComponent implements OnInit {
-
-  constructor(private oauthService: OAuthService) {
-    this.oauthService.setStorage(sessionStorage);
+  constructor(private authservice: OAuthService, private router: Router) {
+    this.authservice.setStorage(sessionStorage);
   }
 
   ngOnInit(): void {
@@ -20,21 +20,23 @@ export class NavbarComponent implements OnInit {
   }
 
   consfigureSingleSignOn() {
-    this.oauthService.configure(authCodeFlowConfig);
-    this.oauthService.tokenValidationHandler = new JwksValidationHandler();
-    this.oauthService.loadDiscoveryDocumentAndTryLogin();
+    this.authservice.configure(authCodeFlowConfig);
+    this.authservice.tokenValidationHandler = new JwksValidationHandler();
+    this.authservice.loadDiscoveryDocumentAndLogin();
   }
 
   login() {
-    this.oauthService.initCodeFlow();
+    this.authservice.initCodeFlow();
   }
 
   logout() {
-    this.oauthService.logOut(true);
+    this.authservice.logOut(true);
+    sessionStorage.removeItem("access_token");
+    this.router.navigate(["/welcome"]); //temporary fix
   }
 
   get token() {
-    const claims = this.oauthService.getIdentityClaims();
+    const claims = this.authservice.getIdentityClaims();
     return claims ?? null;
   }
 }

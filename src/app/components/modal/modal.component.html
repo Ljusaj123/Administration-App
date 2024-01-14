@@ -1,5 +1,6 @@
 <form [formGroup]="myform" (ngSubmit)="saveUser()">
   <h1 mat-dialog-title>{{ inputdata.title }}</h1>
+  <p [style]="'text-align:center; color:red;'">{{ errorMessage }}</p>
   <div mat-dialog-content>
     <mat-form-field>
       <mat-label>Username</mat-label>
