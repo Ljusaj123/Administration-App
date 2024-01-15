@@ -62,24 +62,29 @@ export class ModalComponent implements OnInit {
   }
 
   createUser() {
+    const password = this.generatePassword();
     const user = {
       id: uuidv4(),
       credentials: [
         {
           temporary: false,
           type: "password",
-          value: this.generatePassword(),
+          value: password,
         },
       ],
       firstName: this.myform.value.firstname,
       lastName: this.myform.value.lastname,
       username: this.myform.value.username,
+      enabled: true,
     };
 
     this.httpService.createUser(user).subscribe({
       next: () => this.closeModal(),
       error: (error) => {
         this.errorMessage = error.error.errorMessage;
+      },
+      complete: () => {
+        alert(`Generated password is ${password}`);
       },
     });
   }

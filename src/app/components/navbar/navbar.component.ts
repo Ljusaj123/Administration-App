@@ -31,8 +31,7 @@ export class NavbarComponent implements OnInit {
 
   logout() {
     this.authservice.logOut(true);
-    sessionStorage.removeItem("access_token");
-    this.router.navigate(["/welcome"]); //temporary fix
+    this.router.navigate(["/welcome"]);
   }
 
   get token() {

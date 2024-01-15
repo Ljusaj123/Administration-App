@@ -15,23 +15,36 @@ export class TableComponent {
   dialogOpened: boolean = false;
   filter: string = "";
 
+  userRoles = [];
+  users = [];
+
   isLoading: boolean = false;
   isAuthorized: boolean = true;
-  displayedColumns: string[] = ["username", "firstName", "lastName", "actions"];
+  displayedColumns: string[] = [
+    "username",
+    "firstName",
+    "lastName",
+    "roles",
+    "actions",
+  ];
+
+  definedRoles = ["ADMIN", "DEVELOPER", "TESTER"];
   dataSource: any;
+  allUsersRoles = [];
 
   @ViewChild(MatPaginator) paginatior!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private httpService: HttpService, private dialog: MatDialog) {
     this.loadUsers();
+    this.setTableData();
   }
 
   loadUsers() {
     this.isLoading = true;
     this.httpService.getAllUsers().subscribe({
       next: (results) => {
-        const users = results.map((result: any) => {
+        this.users = this.users = results.map((result: any) => {
           return {
             id: result.id,
             username: result.username,
@@ -40,13 +53,7 @@ export class TableComponent {
           };
         });
 
-        this.dataSource = new MatTableDataSource(users);
-        this.dataSource.paginator = this.paginatior;
-        this.dataSource.sort = this.sort;
-
-        this.isAuthorized = true;
-        this.isLoading = false;
-        this.filter = "";
+        this.getUsersRole();
       },
       error: (error) => {
         if (error.status === 401 || error.status === 403) {
@@ -54,6 +61,43 @@ export class TableComponent {
           this.isLoading = false;
         }
       },
+    });
+  }
+
+  getUsersRole() {
+    this.definedRoles.map((role) => {
+      this.httpService.getUsersRoles(role).subscribe({
+        next: (results) => {
+          this.userRoles = results.map((result: any) => {
+            return { id: result.id, role: role };
+          });
+          this.allUsersRoles.push(...this.userRoles);
+
+          this.setTableData();
+        },
+        error: (error) => {
+          console.log(error);
+        },
+      });
+    });
+  }
+
+  setTableData() {
+    const tableData = this.combineUserInfoAndRoles();
+
+    this.dataSource = new MatTableDataSource(tableData);
+    this.dataSource.paginator = this.paginatior;
+    this.dataSource.sort = this.sort;
+
+    this.isAuthorized = true;
+    this.isLoading = false;
+    this.filter = "";
+  }
+
+  combineUserInfoAndRoles() {
+    return this.users.map((user: any) => {
+      const role: any = this.allUsersRoles.find((r: any) => r.id === user.id);
+      return role ? { ...user, role: role.role } : user;
     });
   }
 
