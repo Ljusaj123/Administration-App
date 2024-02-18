@@ -1,18 +1,16 @@
-import { Component, OnInit } from "@angular/core";
-import { OAuthService, UrlHelperService } from "angular-oauth2-oidc";
-import { authCodeFlowConfig } from "../../auth-config";
-import { JwksValidationHandler } from "angular-oauth2-oidc-jwks";
-import { Router } from "@angular/router";
+import { Component, OnInit } from '@angular/core';
+import { OAuthService, UrlHelperService } from 'angular-oauth2-oidc';
+import { authCodeFlowConfig } from '../../auth-config';
+import { JwksValidationHandler } from 'angular-oauth2-oidc-jwks';
 
 @Component({
-  selector: "app-navbar",
-  templateUrl: "./navbar.component.html",
-  styleUrl: "./navbar.component.css",
+  selector: 'app-navbar',
+  templateUrl: './navbar.component.html',
+  styleUrl: './navbar.component.css',
   providers: [OAuthService, UrlHelperService],
 })
 export class NavbarComponent implements OnInit {
-  constructor(private authservice: OAuthService, private router: Router) {
-  }
+  constructor(private authservice: OAuthService) {}
 
   ngOnInit(): void {
     this.consfigureSingleSignOn();
@@ -29,7 +27,7 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
-    this.authservice.logOut({returnTo: this.authservice.redirectUri});
+    this.authservice.logOut({ returnTo: this.authservice.redirectUri });
   }
 
   get token() {

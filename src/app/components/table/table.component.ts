@@ -6,17 +6,16 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ModalComponent } from '../modal/modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { User } from '../../models/user.model';
-import { OAuthService, UrlHelperService } from 'angular-oauth2-oidc';
 
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
   styleUrl: './table.component.css',
-  providers: [OAuthService, UrlHelperService],
 })
 export class TableComponent {
   filter: string = '';
   users: User[] = [];
+  isAuthorized: boolean = true;
 
   isLoading: boolean = false;
   displayedColumns: string[] = ['username', 'firstName', 'lastName', 'actions'];
@@ -26,11 +25,7 @@ export class TableComponent {
   @ViewChild(MatPaginator) paginatior!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(
-    private httpService: HttpService,
-    private dialog: MatDialog,
-    private authservice: OAuthService
-  ) {
+  constructor(private httpService: HttpService, private dialog: MatDialog) {
     this.loadUsers();
   }
 
@@ -54,19 +49,18 @@ export class TableComponent {
           error.status === 403 ||
           error.status === 0
         ) {
-          //Refresh token
+          this.isAuthorized = false;
         }
       },
-      complete: (): void => {
-        this.isLoading = false;
-      },
     });
+    this.isLoading = false;
   }
 
   setTableData() {
     this.dataSource.data = this.users;
     this.dataSource.paginator = this.paginatior;
     this.dataSource.sort = this.sort;
+    this.isAuthorized = true;
     this.filter = '';
   }
 
