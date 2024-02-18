@@ -1,36 +1,31 @@
-import { Component, Inject, OnInit } from "@angular/core";
-import { FormBuilder, Validators } from "@angular/forms";
-import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { HttpService } from "../../services/http-service.service";
-import { v4 as uuidv4 } from "uuid";
+import { Component, Inject, OnInit } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { HttpService } from '../../services/http-service.service';
+import { v4 as uuidv4 } from 'uuid';
+import { ModalInput, NewUser, User } from '../../models/user.model';
 
 @Component({
-  selector: "app-modal",
-  templateUrl: "./modal.component.html",
-  styleUrl: "./modal.component.css",
+  selector: 'app-modal',
+  templateUrl: './modal.component.html',
+  styleUrl: './modal.component.css',
 })
 export class ModalComponent implements OnInit {
-  inputdata: any;
-  editdata: any;
-  errorMessage: string = "";
+  inputdata: ModalInput;
+  id!: string;
+  errorMessage: string = '';
 
   constructor(
     private buildr: FormBuilder,
     private ref: MatDialogRef<ModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(MAT_DIALOG_DATA) public data: ModalInput,
     private httpService: HttpService
-  ) {}
-
-  myform = this.buildr.group({
-    username: this.buildr.control("", [Validators.required]),
-    firstname: this.buildr.control("", [Validators.required]),
-    lastname: this.buildr.control("", [Validators.required]),
-  });
+  ) {
+    this.inputdata = data;
+  }
 
   ngOnInit() {
-    this.inputdata = this.data;
-
-    if (this.inputdata.request === "PUT") {
+    if (this.inputdata.request === 'PUT') {
       this.setModalData(this.inputdata.id);
       this.myform.controls.username.disable();
     }
@@ -38,23 +33,21 @@ export class ModalComponent implements OnInit {
 
   setModalData(id: string) {
     this.httpService.getSingleUser(id).subscribe((item: any) => {
-      this.editdata = {
-        id: item.id,
-        username: item.username,
-        firstName: item.firstName,
-        lastName: item.lastName,
-      };
-
       this.myform.setValue({
-        username: this.editdata.username,
-        firstname: this.editdata.firstName,
-        lastname: this.editdata.lastName,
+        username: item.username,
+        firstname: item.firstName,
+        lastname: item.lastName,
       });
+      this.id = item.id;
     });
   }
 
   saveUser() {
-    if (this.inputdata.request === "POST") {
+    if (this.myform.status === 'INVALID') {
+      this.errorMessage = 'Enter required inputs';
+      return;
+    }
+    if (this.inputdata.request === 'POST') {
       this.createUser();
     } else {
       this.editUser();
@@ -63,18 +56,18 @@ export class ModalComponent implements OnInit {
 
   createUser() {
     const password = this.generatePassword();
-    const user = {
+    const user: NewUser = {
       id: uuidv4(),
       credentials: [
         {
           temporary: false,
-          type: "password",
+          type: 'password',
           value: password,
         },
       ],
-      firstName: this.myform.value.firstname,
-      lastName: this.myform.value.lastname,
-      username: this.myform.value.username,
+      firstName: this.myform.value.firstname!,
+      lastName: this.myform.value.lastname!,
+      username: this.myform.value.username!,
       enabled: true,
     };
 
@@ -90,17 +83,14 @@ export class ModalComponent implements OnInit {
   }
 
   editUser() {
-    if (this.myform.status === "INVALID") {
-      this.errorMessage = "Enter required inputs";
-      return;
-    }
-    const user = {
-      firstName: this.myform.value.firstname,
-      lastName: this.myform.value.lastname,
-      username: this.myform.value.username,
+    const user: User = {
+      firstName: this.myform.value.firstname!,
+      lastName: this.myform.value.lastname!,
+      username: this.myform.value.username!,
+      id: this.id,
     };
 
-    this.httpService.updateUser(user, this.editdata.id).subscribe({
+    this.httpService.updateUser(user).subscribe({
       next: () => this.closeModal(),
       error: (error) => {
         this.errorMessage = error.error.errorMessage;
@@ -112,7 +102,13 @@ export class ModalComponent implements OnInit {
     this.ref.close();
   }
 
-  generatePassword() {
+  generatePassword(): string {
     return Math.random().toString(36).slice(-8);
   }
+
+  myform = this.buildr.group({
+    username: this.buildr.control('', [Validators.required]),
+    firstname: this.buildr.control('', [Validators.required]),
+    lastname: this.buildr.control('', [Validators.required]),
+  });
 }

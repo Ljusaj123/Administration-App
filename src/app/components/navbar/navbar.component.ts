@@ -12,7 +12,6 @@ import { Router } from "@angular/router";
 })
 export class NavbarComponent implements OnInit {
   constructor(private authservice: OAuthService, private router: Router) {
-    this.authservice.setStorage(sessionStorage);
   }
 
   ngOnInit(): void {
@@ -22,7 +21,7 @@ export class NavbarComponent implements OnInit {
   consfigureSingleSignOn() {
     this.authservice.configure(authCodeFlowConfig);
     this.authservice.tokenValidationHandler = new JwksValidationHandler();
-    this.authservice.loadDiscoveryDocumentAndLogin();
+    this.authservice.loadDiscoveryDocumentAndTryLogin();
   }
 
   login() {
@@ -30,8 +29,7 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
-    this.authservice.logOut(true);
-    this.router.navigate(["/welcome"]);
+    this.authservice.logOut({returnTo: this.authservice.redirectUri});
   }
 
   get token() {

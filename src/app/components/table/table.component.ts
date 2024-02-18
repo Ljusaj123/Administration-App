@@ -1,50 +1,44 @@
-import { Component, ViewChild } from "@angular/core";
-import { HttpService } from "../../services/http-service.service";
-import { MatSort } from "@angular/material/sort";
-import { MatPaginator } from "@angular/material/paginator";
-import { MatTableDataSource } from "@angular/material/table";
-import { ModalComponent } from "../modal/modal.component";
-import { MatDialog } from "@angular/material/dialog";
+import { Component, ViewChild } from '@angular/core';
+import { HttpService } from '../../services/http-service.service';
+import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import { ModalComponent } from '../modal/modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { User } from '../../models/user.model';
+import { OAuthService, UrlHelperService } from 'angular-oauth2-oidc';
 
 @Component({
-  selector: "app-table",
-  templateUrl: "./table.component.html",
-  styleUrl: "./table.component.css",
+  selector: 'app-table',
+  templateUrl: './table.component.html',
+  styleUrl: './table.component.css',
+  providers: [OAuthService, UrlHelperService],
 })
 export class TableComponent {
-  dialogOpened: boolean = false;
-  filter: string = "";
-
-  userRoles = [];
-  users = [];
+  filter: string = '';
+  users: User[] = [];
 
   isLoading: boolean = false;
-  isAuthorized: boolean = true;
-  displayedColumns: string[] = [
-    "username",
-    "firstName",
-    "lastName",
-    "roles",
-    "actions",
-  ];
+  displayedColumns: string[] = ['username', 'firstName', 'lastName', 'actions'];
 
-  definedRoles = ["ADMIN", "DEVELOPER", "TESTER"];
-  dataSource: any;
-  allUsersRoles = [];
+  dataSource = new MatTableDataSource<User>();
 
   @ViewChild(MatPaginator) paginatior!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private httpService: HttpService, private dialog: MatDialog) {
+  constructor(
+    private httpService: HttpService,
+    private dialog: MatDialog,
+    private authservice: OAuthService
+  ) {
     this.loadUsers();
-    this.setTableData();
   }
 
   loadUsers() {
     this.isLoading = true;
     this.httpService.getAllUsers().subscribe({
-      next: (results) => {
-        this.users = this.users = results.map((result: any) => {
+      next: (results): void => {
+        this.users = results.map((result: any) => {
           return {
             id: result.id,
             username: result.username,
@@ -52,53 +46,28 @@ export class TableComponent {
             lastName: result.lastName,
           };
         });
-
-        this.getUsersRole();
+        this.setTableData();
       },
-      error: (error) => {
-        if (error.status === 401 || error.status === 403) {
-          this.isAuthorized = false;
-          this.isLoading = false;
+      error: (error): void => {
+        if (
+          error.status === 401 ||
+          error.status === 403 ||
+          error.status === 0
+        ) {
+          //Refresh token
         }
       },
-    });
-  }
-
-  getUsersRole() {
-    this.definedRoles.map((role) => {
-      this.httpService.getUsersRoles(role).subscribe({
-        next: (results) => {
-          this.userRoles = results.map((result: any) => {
-            return { id: result.id, role: role };
-          });
-          this.allUsersRoles.push(...this.userRoles);
-
-          this.setTableData();
-        },
-        error: (error) => {
-          console.log(error);
-        },
-      });
+      complete: (): void => {
+        this.isLoading = false;
+      },
     });
   }
 
   setTableData() {
-    const tableData = this.combineUserInfoAndRoles();
-
-    this.dataSource = new MatTableDataSource(tableData);
+    this.dataSource.data = this.users;
     this.dataSource.paginator = this.paginatior;
     this.dataSource.sort = this.sort;
-
-    this.isAuthorized = true;
-    this.isLoading = false;
-    this.filter = "";
-  }
-
-  combineUserInfoAndRoles() {
-    return this.users.map((user: any) => {
-      const role: any = this.allUsersRoles.find((r: any) => r.id === user.id);
-      return role ? { ...user, role: role.role } : user;
-    });
+    this.filter = '';
   }
 
   applyFilter(event: Event) {
@@ -107,28 +76,28 @@ export class TableComponent {
   }
 
   createUser() {
-    this.openDialog("Create User", ModalComponent, "POST");
+    this.openDialog('Create User', 'POST');
   }
 
   editUser(id: string) {
-    this.openDialog("Edit User", ModalComponent, "PUT", id);
+    this.openDialog('Edit User', 'PUT', id);
   }
 
   deleteUser(id: string) {
     this.httpService.deleteUser(id).subscribe({
-      next: () => {
+      next: (): void => {
         this.loadUsers();
       },
-      error: (error) => {
+      error: (error): void => {
         console.log(error);
       },
     });
   }
 
-  openDialog(title: string, component: any, request: string, id?: string) {
-    const popup = this.dialog.open(component, {
-      width: "330px",
-      data: { title: title, id: id, request: request },
+  openDialog(title: string, request: string, id?: string) {
+    const popup = this.dialog.open(ModalComponent, {
+      width: '330px',
+      data: { title, id, request },
     });
     popup.afterClosed().subscribe(() => {
       this.loadUsers();

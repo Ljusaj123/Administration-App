@@ -1,9 +1,9 @@
-import { inject } from "@angular/core";
-import { CanActivateFn } from "@angular/router";
-import { OAuthService } from "angular-oauth2-oidc";
-import { Router } from "@angular/router";
+import { inject } from '@angular/core';
+import { CanActivateFn } from '@angular/router';
+import { OAuthService } from 'angular-oauth2-oidc';
+import { Router } from '@angular/router';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard: CanActivateFn = () => {
   const authService = inject(OAuthService);
   const router = inject(Router);
 
@@ -13,7 +13,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   if (hasAccessToken && hasIdToken) {
     return true;
   } else {
-    router.navigate(["/welcome"]);
+    router.navigate(['/welcome']);
     return false;
   }
 };
