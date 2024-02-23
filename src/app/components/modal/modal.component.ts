@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpService } from '../../services/http-service.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,12 +16,25 @@ export class ModalComponent implements OnInit {
   errorMessage: string = '';
 
   constructor(
-    private buildr: FormBuilder,
     private ref: MatDialogRef<ModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ModalInput,
     private httpService: HttpService
   ) {
     this.inputdata = data;
+    this.myform = new FormGroup({
+      username: new FormControl<string>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      firstname: new FormControl<string>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      lastname: new FormControl<string>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+    });
   }
 
   ngOnInit() {
@@ -56,30 +69,37 @@ export class ModalComponent implements OnInit {
 
   createUser() {
     const password = this.generatePassword();
-    const user: NewUser = {
-      id: uuidv4(),
-      credentials: [
-        {
-          temporary: false,
-          type: 'password',
-          value: password,
+    if (
+      this.myform &&
+      this.myform.value?.firstname &&
+      this.myform.value?.lastname &&
+      this.myform.value?.username
+    ) {
+      const user: NewUser = {
+        id: uuidv4(),
+        credentials: [
+          {
+            temporary: false,
+            type: 'password',
+            value: password,
+          },
+        ],
+        firstName: this.myform.value.firstname,
+        lastName: this.myform.value.lastname,
+        username: this.myform.value.username,
+        enabled: true,
+      };
+      this.httpService.createUser(user).subscribe({
+        next: () => this.closeModal(),
+        error: (error) => {
+          this.errorMessage = error.error.errorMessage;
         },
-      ],
-      firstName: this.myform.value.firstname!,
-      lastName: this.myform.value.lastname!,
-      username: this.myform.value.username!,
-      enabled: true,
-    };
-
-    this.httpService.createUser(user).subscribe({
-      next: () => this.closeModal(),
-      error: (error) => {
-        this.errorMessage = error.error.errorMessage;
-      },
-      complete: () => {
-        alert(`Generated password is ${password}`);
-      },
-    });
+        complete: () => {
+          alert(`Generated password is ${password}`);
+        },
+      });
+    } else {
+    }
   }
 
   editUser() {
@@ -106,9 +126,9 @@ export class ModalComponent implements OnInit {
     return Math.random().toString(36).slice(-8);
   }
 
-  myform = this.buildr.group({
-    username: this.buildr.control('', [Validators.required]),
-    firstname: this.buildr.control('', [Validators.required]),
-    lastname: this.buildr.control('', [Validators.required]),
-  });
+  myform: FormGroup<{
+    username: FormControl<string>;
+    firstname: FormControl<string>;
+    lastname: FormControl<string>;
+  }>;
 }
